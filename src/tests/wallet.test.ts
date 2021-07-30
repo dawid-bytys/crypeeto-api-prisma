@@ -8,7 +8,7 @@ let accessToken: string; // Create a global accessToken variable
 let server: any; // Create a new server instance
 let port: string;
 
-describe("-----WALLET-----", () => {
+describe("[-----WALLET-----]", () => {
   // before all tests, clear the database, register and login to get an accessToken
   beforeAll(async () => {
     server = app.listen();

@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 let server: any;
 let port: string;
 
-describe("-----AUTHORIZATION-----", () => {
+describe("[-----AUTHORIZATION-----]", () => {
   // before all tests, clear the database
   beforeAll(async () => {
     server = app.listen();

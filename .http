@@ -26,3 +26,9 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiYmIzZDIxY
 {
   "name": "Ethereum"
 }
+
+###
+
+GET http://localhost:4056/api/news?topic=Bitcoin
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiZWY3MjllZDItZGZiNi00NmNkLTk3OWEtYTk3M2ZjNGRhMDVlIiwiaWF0IjoxNjI3NjY3NzAxLCJleHAiOjE2Mjc2ODkzMDF9.7pgemFgnJl-JtjyqD0Kfbpn_afLwTpnnHqo2ArC4ygM
