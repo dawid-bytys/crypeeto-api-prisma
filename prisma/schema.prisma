@@ -1,0 +1,42 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// User model
+model User {
+  uuid     String   @id @unique @default(uuid())
+  username String   @unique
+  password String
+  email    String   @unique
+  picture  String   @default("")
+  wallets  Wallet[]
+
+  @@map(name: "users")
+}
+
+// Cryptocurrency model
+model Cryptocurrency {
+  uuid         String   @id @unique @default(uuid())
+  name         String   @unique
+  abbreviation String   @unique
+  wallets      Wallet[]
+
+  @@map(name: "cryptocurrencies")
+}
+
+// Wallet model
+model Wallet {
+  uuid               String         @id @unique @default(uuid())
+  userUUID           String         @map("user_uuid")
+  user               User           @relation(fields: [userUUID], references: [uuid])
+  cryptocurrencyUUID String         @map("cryptocurrency_uuid")
+  cryptocurrency     Cryptocurrency @relation(fields: [cryptocurrencyUUID], references: [uuid])
+  amount             Int            @default(0)
+
+  @@map(name: "wallets")
+}
