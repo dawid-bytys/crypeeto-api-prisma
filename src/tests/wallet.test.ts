@@ -159,8 +159,148 @@ describe("[-----WALLET-----]", () => {
     });
   });
 
-  // wallet currency exchange tests
-  //describe("[POST] --> /wallet/exchange", () => {
-  //
-  //})
+  // wallet update general tests
+  describe("[POST] --> /wallet/update/:type", () => {
+    // returns endpoint not found (invalid input) [404]
+    it("returns endpoint not found (invalid input) [404]", async () => {
+      const response = await request(server)
+        .post("/api/wallet/update/test")
+        .set("Authorization", `Bearer ${accessToken}`);
+
+      expect(response.status).toBe(404);
+      expect(response.body.message).toBe("Endpoint not found");
+    });
+  });
+
+  // wallet addition tests
+  describe("[POST] --> /wallet/update/add", () => {
+    // adds specified amount of money successfully [200]
+    it("adds specified amount of money successfully [200]", async () => {
+      const response = await request(server)
+        .post("/api/wallet/update/add")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({
+          name: "Ethereum",
+          amount: 1,
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe(
+        "Your wallet has been successfully updated"
+      );
+    });
+
+    // returns invalid input (no any data) [400]
+    it("returns invalid input (no any data) [400]", async () => {
+      const response = await request(server)
+        .post("/api/wallet/update/add")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({});
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe("Invalid input");
+    });
+
+    // returns invalid input (no name) [400]
+    it("returns invalid input (no name) [400]", async () => {
+      const response = await request(server)
+        .post("/api/wallet/update/add")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({
+          amount: 1,
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe("Invalid input");
+    });
+
+    // returns invalid input (no amount) [400]
+    it("returns invalid input (no amount) [400]", async () => {
+      const response = await request(server)
+        .post("/api/wallet/update/add")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({
+          name: "Ethereum",
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe("Invalid input");
+    });
+
+    // returns the cryptocurrency is invalid [400]
+    it("returns the cryptocurrency is invalid [400]", async () => {
+      const response = await request(server)
+        .post("/api/wallet/update/add")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({
+          name: "Dogecoin",
+          amount: 1,
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(
+        "We do not support the provided currency"
+      );
+    });
+
+    // returns the user does not have a wallet with provided cryptocurrency [400]
+    it("returns the user does not have a wallet with provided cryptocurrency [400]", async () => {
+      const ethereum = await prisma.cryptocurrency.findUnique({
+        where: { name: "Ethereum" },
+      });
+
+      if (ethereum) {
+        await prisma.wallet.deleteMany({
+          where: {
+            cryptocurrencyUUID: ethereum.uuid,
+          },
+        });
+      }
+
+      const response = await request(server)
+        .post("/api/wallet/update/add")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({
+          name: "Ethereum",
+          amount: 1,
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(
+        "You do not have a wallet with provided cryptocurrency, create it first"
+      );
+    });
+
+    // returns the user is not authorized (no any token) [401]
+    it("returns the user is not authorized (no any token) [401]", async () => {
+      const response = await request(server)
+        .post("/api/wallet/update/add")
+        .set("Authorization", `Bearer `)
+        .send({
+          name: "Dogecoin",
+          amount: 1,
+        });
+
+      expect(response.status).toBe(401);
+      expect(response.body.message).toBe("Unauthorized");
+    });
+
+    // returns the user is not authorized (invalid or expired token) [401]
+    it("returns the user is not authorized (invalid or expired token) [401]", async () => {
+      const response = await request(server)
+        .post("/api/wallet/update/add")
+        .set("Authorization", `Bearer 12345`)
+        .send({
+          name: "Dogecoin",
+          amount: 1,
+        });
+
+      expect(response.status).toBe(401);
+      expect(response.body.message).toBe("Unauthorized");
+    });
+  });
+  /*
+  describe("[POST] --> /wallet/update/exchange", () => {
+    // exchanges specified amount of money successfully [200]
+  });*/
 });
