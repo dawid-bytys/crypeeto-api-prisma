@@ -21,10 +21,10 @@ Content-Type: application/json
 
 POST http://localhost:4056/api/wallet/create
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiNzZlMTVkNmMtM2Q2ZS00NDhjLTkyMjMtNWEwMTg4Yzk2MTc5IiwiaWF0IjoxNjI3Njc5MDk2LCJleHAiOjE2Mjc3MDA2OTZ9.cNF03rtcZYliyILnM7NRU35w5-QVIDlp1nBVyu8-RU4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiNWUyNDIzYzctZjEwZi00Y2YwLTg4ZmYtZjVhOGU2NGJlM2NjIiwiaWF0IjoxNjI3NzYzNjM2LCJleHAiOjE2Mjc3ODUyMzZ9.57tqLfOrHtv8a7ZFIq98kp2YItAylP7LgyV1SXTKDj0
 
 {
-  "name": "Ethereum"
+  "name": "Bitcoin"
 }
 
 ###
@@ -38,9 +38,21 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiZWY3MjllZ
 
 POST http://localhost:4056/api/wallet/update/add
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiNzZlMTVkNmMtM2Q2ZS00NDhjLTkyMjMtNWEwMTg4Yzk2MTc5IiwiaWF0IjoxNjI3Njc5MDk2LCJleHAiOjE2Mjc3MDA2OTZ9.cNF03rtcZYliyILnM7NRU35w5-QVIDlp1nBVyu8-RU4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiNWUyNDIzYzctZjEwZi00Y2YwLTg4ZmYtZjVhOGU2NGJlM2NjIiwiaWF0IjoxNjI3NzYzNjM2LCJleHAiOjE2Mjc3ODUyMzZ9.57tqLfOrHtv8a7ZFIq98kp2YItAylP7LgyV1SXTKDj0
 
 {
-  "name": "Ethereum",
+  "name": "Bitcoin",
   "amount": 2
+}
+
+###
+
+POST http://localhost:4056/api/wallet/update/exchange
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiNWUyNDIzYzctZjEwZi00Y2YwLTg4ZmYtZjVhOGU2NGJlM2NjIiwiaWF0IjoxNjI3NzYzNjM2LCJleHAiOjE2Mjc3ODUyMzZ9.57tqLfOrHtv8a7ZFIq98kp2YItAylP7LgyV1SXTKDj0
+
+{
+  "from": "Bitcoin",
+  "to": "Ethereum",
+  "amount": 1
 }

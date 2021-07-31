@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import axios from "axios";
+import { getAbbreviation } from "../utils/abbreviation";
 
 const prisma = new PrismaClient();
 
@@ -15,6 +17,13 @@ interface Exchange {
 
 interface Add extends Currency {
   amount: number;
+}
+
+interface Rate {
+  symbol: string;
+  rate: number;
+  amount: number;
+  timestamp: number;
 }
 
 export const createWallet = async (req: Request, res: Response) => {
@@ -72,7 +81,7 @@ export const updateWallet = async (req: Request, res: Response) => {
     const { name, amount }: Add = req.body;
 
     // Check whether the user has provided a correct input
-    if (!name || !amount)
+    if (!name || !amount || amount < 0)
       return res.status(400).send({ message: "Invalid input" });
 
     // Check whether the provided currency name exists in the database
@@ -97,6 +106,7 @@ export const updateWallet = async (req: Request, res: Response) => {
           "You do not have a wallet with provided cryptocurrency, create it first",
       });
 
+    // Try to update the user's wallet
     try {
       await prisma.wallet.updateMany({
         where: {
@@ -120,9 +130,96 @@ export const updateWallet = async (req: Request, res: Response) => {
     const { from, to, amount }: Exchange = req.body;
 
     // Check whether the user has provided a correct input
-    if (!from || !to || !amount)
+    if (!from || !to || !amount || amount <= 0)
       return res.status(400).send({ message: "Invalid input" });
 
-    // Check whether the provided currencies exist in the database
+    // Check whether the user has provided different currencies
+    if (from === to)
+      return res
+        .status(400)
+        .send({ message: "You cannot exchange the same currency" });
+
+    // Check whether the provided currency name exists in the database
+    const fromCurrency = await prisma.cryptocurrency.findUnique({
+      where: { name: from },
+    });
+    const toCurrency = await prisma.cryptocurrency.findUnique({
+      where: { name: to },
+    });
+    if (!fromCurrency || !toCurrency)
+      return res.status(400).send({
+        message: "We do not support the provided currency",
+      });
+
+    // Check whether the user has wallets with provided cryptocurrencies
+    const fromWallet = await prisma.wallet.findFirst({
+      where: {
+        userUUID: user.uuid as string,
+        cryptocurrencyUUID: fromCurrency.uuid,
+      },
+    });
+    const toWallet = await prisma.wallet.findFirst({
+      where: {
+        userUUID: user.uuid as string,
+        cryptocurrencyUUID: toCurrency.uuid,
+      },
+    });
+
+    if (!fromWallet || !toWallet)
+      return res.status(400).send({
+        message:
+          "You either do not have a wallet with provided 'from' currency or with provided 'to' currency",
+      });
+
+    // Check whether the user has enough amount of tokens in the 'from' currency wallet
+    const tokensAmount = fromWallet.amount;
+    if (tokensAmount < amount)
+      return res
+        .status(400)
+        .send({ message: "Not enough funds in the wallet" });
+
+    // Try to fetch the latest exchange rate and update the wallet
+    try {
+      const { data } = await axios.get<Rate>(
+        `https://api.twelvedata.com/currency_conversion?symbol=${getAbbreviation(
+          from
+        )}/${getAbbreviation(to)}&amount=${amount}&apikey=${
+          process.env.CRYPTO_API_KEY
+        }`
+      );
+      const exchangedAmount = data.amount;
+
+      // Subtract from the previous wallet
+      await prisma.wallet.updateMany({
+        where: {
+          userUUID: user.uuid as string,
+          cryptocurrencyUUID: fromCurrency.uuid,
+        },
+        data: {
+          amount: {
+            decrement: amount,
+          },
+        },
+      });
+
+      // Add to the new wallet
+      await prisma.wallet.updateMany({
+        where: {
+          userUUID: user.uuid as string,
+          cryptocurrencyUUID: toCurrency.uuid,
+        },
+        data: {
+          amount: {
+            increment: exchangedAmount,
+          },
+        },
+      });
+
+      res
+        .status(200)
+        .send({ message: "Your wallet has been successfully updated" });
+    } catch (err) {
+      res.status(400).send({ message: err.message });
+    }
   }
 };

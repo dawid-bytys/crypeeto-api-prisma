@@ -36,7 +36,7 @@ model Wallet {
   user               User           @relation(fields: [userUUID], references: [uuid])
   cryptocurrencyUUID String         @map("cryptocurrency_uuid")
   cryptocurrency     Cryptocurrency @relation(fields: [cryptocurrencyUUID], references: [uuid])
-  amount             Int            @default(0)
+  amount             Float          @default(0)
 
   @@map(name: "wallets")
 }
