@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 // Create a new server instance
 let server: any;
-let port: string;
+let port: number;
 
 describe("[-----AUTHORIZATION-----]", () => {
   // before all tests, clear the database

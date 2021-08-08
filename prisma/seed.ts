@@ -3,8 +3,6 @@ import { cryptocurrencies } from "./cryptocurrencies";
 const prisma = new PrismaClient();
 
 const main = async () => {
-  console.log("Start seeding...");
-
   try {
     // Add cryptocurrencies
     for (const element of cryptocurrencies) {
@@ -14,7 +12,7 @@ const main = async () => {
     }
 
     // Add test user
-    await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         username: "testuser123",
         password: "PasswordHash123!",
@@ -22,39 +20,35 @@ const main = async () => {
       },
     });
 
-    // Fetch user's uuid
-    const user = await prisma.user.findUnique({
-      where: {
-        username: "testuser123",
-      },
-    });
-
     // Fetch cryptocurrencies
-    const firstCryptocurrency = await prisma.cryptocurrency.findUnique({
-      where: { name: "Ripple" },
-    });
-    const secondCryptocurrency = await prisma.cryptocurrency.findUnique({
-      where: { name: "Ethereum" },
-    });
+    const [firstCryptocurrency, secondCryptocurrency] = await Promise.all([
+      prisma.cryptocurrency.findUnique({
+        where: { name: "Ripple" },
+      }),
+      prisma.cryptocurrency.findUnique({
+        where: { name: "Ethereum" },
+      }),
+    ]);
 
-    if (user && firstCryptocurrency && secondCryptocurrency) {
-      // Add two sample wallets
-      await prisma.wallet.create({
+    // Create to sample wallets
+    await Promise.all([
+      prisma.wallet.create({
         data: {
           userUUID: user.uuid,
+          // @ts-ignore
           cryptocurrencyUUID: firstCryptocurrency.uuid,
         },
-      });
-
-      await prisma.wallet.create({
+      }),
+      prisma.wallet.create({
         data: {
           userUUID: user.uuid,
+          // @ts-ignore
           cryptocurrencyUUID: secondCryptocurrency.uuid,
         },
-      });
-    }
-    console.log("Finished seeding.");
+      }),
+    ]);
 
+    console.log("Seeding finished.");
     await prisma.$disconnect();
   } catch (err) {
     console.log(err);

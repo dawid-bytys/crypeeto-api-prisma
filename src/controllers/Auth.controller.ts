@@ -10,6 +10,7 @@ import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 
+// Types
 interface Credentials {
   username: string;
   password: string;
@@ -42,12 +43,15 @@ export const register = async (req: Request, res: Response) => {
     });
 
   // Check whether the email or the username exists in the database
-  const usernameExists = await prisma.user.findUnique({
-    where: { username: username },
-  });
-  const emailExists = await prisma.user.findUnique({
-    where: { email: email },
-  });
+  const [usernameExists, emailExists] = await Promise.all([
+    prisma.user.findUnique({
+      where: { username: username },
+    }),
+    prisma.user.findUnique({
+      where: { email: email },
+    }),
+  ]);
+
   if (usernameExists || emailExists)
     return res
       .status(400)

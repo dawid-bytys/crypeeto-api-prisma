@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import axios from "axios";
 
+// Types
 interface News {
   status: string;
   totalResults: number;

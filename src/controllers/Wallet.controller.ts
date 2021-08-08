@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import axios from "axios";
 import { getAbbreviation } from "../utils/abbreviation";
 
 const prisma = new PrismaClient();
 
+// Types
 interface Currency {
   name: string;
 }
@@ -140,31 +141,34 @@ export const updateWallet = async (req: Request, res: Response) => {
         .send({ message: "You cannot exchange the same currency" });
 
     // Check whether the provided currency name exists in the database
-    const fromCurrency = await prisma.cryptocurrency.findUnique({
-      where: { name: from },
-    });
-    const toCurrency = await prisma.cryptocurrency.findUnique({
-      where: { name: to },
-    });
+    const [fromCurrency, toCurrency] = await Promise.all([
+      prisma.cryptocurrency.findUnique({
+        where: { name: from },
+      }),
+      prisma.cryptocurrency.findUnique({
+        where: { name: to },
+      }),
+    ]);
     if (!fromCurrency || !toCurrency)
       return res.status(400).send({
         message: "We do not support the provided currency",
       });
 
     // Check whether the user has wallets with provided cryptocurrencies
-    const fromWallet = await prisma.wallet.findFirst({
-      where: {
-        userUUID: user.uuid as string,
-        cryptocurrencyUUID: fromCurrency.uuid,
-      },
-    });
-    const toWallet = await prisma.wallet.findFirst({
-      where: {
-        userUUID: user.uuid as string,
-        cryptocurrencyUUID: toCurrency.uuid,
-      },
-    });
-
+    const [fromWallet, toWallet] = await Promise.all([
+      prisma.wallet.findFirst({
+        where: {
+          userUUID: user.uuid as string,
+          cryptocurrencyUUID: fromCurrency.uuid,
+        },
+      }),
+      prisma.wallet.findFirst({
+        where: {
+          userUUID: user.uuid as string,
+          cryptocurrencyUUID: toCurrency.uuid,
+        },
+      }),
+    ]);
     if (!fromWallet || !toWallet)
       return res.status(400).send({
         message:
@@ -184,36 +188,36 @@ export const updateWallet = async (req: Request, res: Response) => {
         `https://api.twelvedata.com/currency_conversion?symbol=${getAbbreviation(
           from
         )}/${getAbbreviation(to)}&amount=${amount}&apikey=${
-          process.env.CRYPTO_API_KEY
+          process.env.TWELVEDATA_API_KEY
         }`
       );
       const exchangedAmount = data.amount;
 
-      // Subtract from the previous wallet
-      await prisma.wallet.updateMany({
-        where: {
-          userUUID: user.uuid as string,
-          cryptocurrencyUUID: fromCurrency.uuid,
-        },
-        data: {
-          amount: {
-            decrement: amount,
+      // Subtract from the previous wallet and add to the new wallet
+      await Promise.all([
+        prisma.wallet.updateMany({
+          where: {
+            userUUID: user.uuid as string,
+            cryptocurrencyUUID: fromCurrency.uuid,
           },
-        },
-      });
-
-      // Add to the new wallet
-      await prisma.wallet.updateMany({
-        where: {
-          userUUID: user.uuid as string,
-          cryptocurrencyUUID: toCurrency.uuid,
-        },
-        data: {
-          amount: {
-            increment: exchangedAmount,
+          data: {
+            amount: {
+              decrement: amount,
+            },
           },
-        },
-      });
+        }),
+        prisma.wallet.updateMany({
+          where: {
+            userUUID: user.uuid as string,
+            cryptocurrencyUUID: toCurrency.uuid,
+          },
+          data: {
+            amount: {
+              increment: exchangedAmount,
+            },
+          },
+        }),
+      ]);
 
       res
         .status(200)

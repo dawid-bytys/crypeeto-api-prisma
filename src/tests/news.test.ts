@@ -6,7 +6,7 @@ import { testRegister, testLogin } from "../utils/testUtils";
 const prisma = new PrismaClient();
 let accessToken: string; // Create a global accessToken variable
 let server: any; // Create a new server instance
-let port: string;
+let port: number;
 
 describe("[-----NEWS-----]", () => {
   // before all tests, clear the database, register and login to get an accessToken

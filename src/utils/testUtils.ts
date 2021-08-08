@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const testRegister = async (port: string) => {
+export const testRegister = async (port: number) => {
   try {
     await axios.post(`http://localhost:${port}/api/register`, {
       username: "testusername",
@@ -12,7 +12,7 @@ export const testRegister = async (port: string) => {
   }
 };
 
-export const testLogin = async (port: string): Promise<string> => {
+export const testLogin = async (port: number): Promise<string> => {
   const { data } = await axios.post(`http://localhost:${port}/api/login`, {
     username: "testusername",
     password: "TestPassword123!",
