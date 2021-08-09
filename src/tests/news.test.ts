@@ -1,9 +1,8 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from "../prisma";
 import request from "supertest";
 import app from "../app";
 import { testRegister, testLogin } from "../utils/testUtils";
 
-const prisma = new PrismaClient();
 let accessToken: string; // Create a global accessToken variable
 let server: any; // Create a new server instance
 let port: number;

@@ -1,9 +1,7 @@
 import { Request, Response } from "express";
-import { Prisma, PrismaClient } from "@prisma/client";
+import prisma from "../prisma";
 import axios from "axios";
 import { getAbbreviation } from "../utils/abbreviation";
-
-const prisma = new PrismaClient();
 
 // Types
 interface Currency {

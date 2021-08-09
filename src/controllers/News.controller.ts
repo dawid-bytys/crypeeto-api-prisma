@@ -20,7 +20,7 @@ interface News {
   }[];
 }
 
-export const fetchNews = async (req: Request, res: Response) => {
+export const getNews = async (req: Request, res: Response) => {
   const { topic } = req.query;
 
   if (!topic) return res.status(400).send({ message: "Invalid input" });

@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { cryptocurrencies } from "./cryptocurrencies";
+
 const prisma = new PrismaClient();
 
 const main = async () => {

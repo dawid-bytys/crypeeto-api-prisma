@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../prisma";
 import {
   isUsernameValid,
   isPasswordValid,
@@ -7,8 +7,6 @@ import {
 } from "../utils/validation";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-
-const prisma = new PrismaClient();
 
 // Types
 interface Credentials {
