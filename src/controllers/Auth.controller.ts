@@ -15,6 +15,18 @@ interface Credentials {
   email: string;
 }
 
+interface CallbackData {
+  username: string;
+  email: string;
+  picture: string | undefined;
+  wallets:
+    | {
+        name: string | undefined;
+        amount: number;
+      }[]
+    | undefined;
+}
+
 export const register = async (req: Request, res: Response) => {
   const { username, password, email }: Credentials = req.body;
 
@@ -143,4 +155,60 @@ export const authorization = async (req: Request, res: Response) => {
       is_authorized: false,
     });
   }
+};
+
+export const getUserData = async (req: Request, res: Response) => {
+  const user = req.user;
+
+  // Fetch user data and their wallets
+  const [userData, userWallets] = await Promise.all([
+    prisma.user.findUnique({
+      where: {
+        uuid: user.uuid,
+      },
+    }),
+    prisma.wallet.findMany({
+      where: {
+        userUUID: user.uuid,
+      },
+    }),
+  ]);
+  if (!userData)
+    return res.status(400).send({ message: "Something went wrong" });
+
+  // If the user has no wallets, return their data with empty wallets array
+  if (!userWallets) {
+    const callbackData: CallbackData = {
+      username: userData.username,
+      email: userData.email,
+      picture: userData.picture,
+      wallets: [],
+    };
+
+    return res.status(200).send(callbackData);
+  }
+
+  // Fetch matching currencies
+  const currencies = await prisma.cryptocurrency.findMany({
+    where: {
+      uuid: {
+        in: userWallets.map(x => x.cryptocurrencyUUID),
+      },
+    },
+  });
+  if (!currencies)
+    return res.status(400).send({ message: "Something went wrong" });
+
+  const callbackData: CallbackData = {
+    username: userData.username,
+    email: userData.email,
+    picture: userData.picture,
+    wallets: userWallets.map(x => ({
+      name: currencies.find(i => i.uuid === x.cryptocurrencyUUID)?.name,
+      amount: x.amount,
+    })),
+  };
+
+  // Return the user their data
+  res.status(200).send(callbackData);
 };
