@@ -1,5 +1,5 @@
 import express from "express";
-import { authenticateToken } from "../utils/auth";
+import { authenticateToken } from "../middleware/auth";
 import { createWallet, updateWallet } from "../controllers/Wallet.controller";
 
 const walletRouter = express.Router();

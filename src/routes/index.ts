@@ -6,7 +6,7 @@ import dataRouter from "./data";
 
 const router = express.Router();
 
-router.use(authRouter);
+router.use("/auth", authRouter);
 router.use("/wallet", walletRouter);
 router.use(newsRouter);
 router.use(dataRouter);

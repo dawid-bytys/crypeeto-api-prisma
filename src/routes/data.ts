@@ -1,6 +1,6 @@
 import express from "express";
 import { getChartData } from "../controllers/Data.controller";
-import { authenticateToken } from "../utils/auth";
+import { authenticateToken } from "../middleware/auth";
 
 const dataRouter = express.Router();
 

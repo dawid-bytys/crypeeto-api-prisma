@@ -117,43 +117,11 @@ export const login = async (req: Request, res: Response) => {
 
     // Send the user his accessToken
     res.status(200).send({
+      message: "You've been successfully logged in!",
       access_token: accessToken,
     });
   } catch (err) {
     res.status(400).send({ message: err.message });
-  }
-};
-
-export const authorization = async (req: Request, res: Response) => {
-  const authHeader = req.headers["authorization"];
-  const accessToken = authHeader && authHeader.split(" ")[1];
-
-  // Check whether the accessToken exists
-  if (!accessToken)
-    return res.status(401).send({
-      is_authorized: false,
-    });
-
-  // Try to decode the token
-  try {
-    const decodedToken = jwt.verify(
-      accessToken,
-      process.env.SECRET_TOKEN || ""
-    ) as any;
-
-    // Check whether the token has already expired
-    const user = await prisma.user.findUnique({
-      where: { uuid: decodedToken.uuid },
-    });
-    if (!user) return res.status(401).send({ is_authorized: false });
-
-    res.status(200).send({
-      is_authorized: true,
-    });
-  } catch (err) {
-    res.status(401).send({
-      is_authorized: false,
-    });
   }
 };
 

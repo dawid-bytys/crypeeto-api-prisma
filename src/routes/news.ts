@@ -1,6 +1,6 @@
 import express from "express";
 import { getNews } from "../controllers/News.controller";
-import { authenticateToken } from "../utils/auth";
+import { authenticateToken } from "../middleware/auth";
 
 const newsRouter = express.Router();
 
