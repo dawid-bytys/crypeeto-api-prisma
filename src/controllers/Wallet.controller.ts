@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import prisma from "../prisma";
+import { prisma } from "../prisma";
 import axios from "axios";
 import { getAbbreviation } from "../utils/abbreviation";
 
@@ -40,7 +40,7 @@ export const createWallet = async (req: Request, res: Response) => {
       .status(400)
       .send({ message: "We do not support the provided currency" });
 
-  // Check whether the user already has a wallet with provided cryptocurrency type
+  // Check whether a user already has a wallet with provided cryptocurrency type
   const wallet = await prisma.wallet.findFirst({
     where: {
       userUUID: user.uuid,
@@ -83,7 +83,7 @@ export const updateWallet = async (req: Request, res: Response) => {
     if (!name || !amount || amount < 0)
       return res.status(400).send({ message: "Invalid input" });
 
-    // Check whether the provided currency name exists in the database
+    // Check whether a provided currency name exists in the database
     const specificCurrency = await prisma.cryptocurrency.findUnique({
       where: { name: name },
     });
@@ -105,7 +105,7 @@ export const updateWallet = async (req: Request, res: Response) => {
           "You do not have a wallet with provided cryptocurrency, create it first",
       });
 
-    // Try to update the user's wallet
+    // Try to update a user's wallet
     try {
       await prisma.wallet.updateMany({
         where: {
@@ -138,7 +138,7 @@ export const updateWallet = async (req: Request, res: Response) => {
         .status(400)
         .send({ message: "You cannot exchange the same currency" });
 
-    // Check whether the provided currency name exists in the database
+    // Check whether a provided currency name exists in the database
     const [fromCurrency, toCurrency] = await Promise.all([
       prisma.cryptocurrency.findUnique({
         where: { name: from },
@@ -152,7 +152,7 @@ export const updateWallet = async (req: Request, res: Response) => {
         message: "We do not support the provided currency",
       });
 
-    // Check whether the user has wallets with provided cryptocurrencies
+    // Check whether the user has wallets with the provided cryptocurrencies
     const [fromWallet, toWallet] = await Promise.all([
       prisma.wallet.findFirst({
         where: {
@@ -173,7 +173,7 @@ export const updateWallet = async (req: Request, res: Response) => {
           "You either do not have a wallet with provided 'from' currency or with provided 'to' currency",
       });
 
-    // Check whether the user has enough amount of tokens in the 'from' currency wallet
+    // Check whether the user has enough amount of tokens in a 'from' currency wallet
     const tokensAmount = fromWallet.amount;
     if (tokensAmount < amount)
       return res

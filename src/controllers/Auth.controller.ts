@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import prisma from "../prisma";
+import { prisma } from "../prisma";
 import {
   isUsernameValid,
   isPasswordValid,
@@ -23,13 +23,11 @@ interface CallbackData {
   last_name: string;
   username: string;
   email: string;
-  picture: string | undefined;
-  wallets:
-    | {
-        name: string | undefined;
-        amount: number;
-      }[]
-    | undefined;
+  picture: string;
+  wallets: {
+    name: string;
+    amount: number;
+  }[];
 }
 
 export const register = async (req: Request, res: Response) => {
@@ -42,7 +40,7 @@ export const register = async (req: Request, res: Response) => {
     email,
   }: Credentials = req.body;
 
-  // Check whether the provided data exists
+  // Check whether provided data exists
   if (
     !first_name ||
     !last_name ||
@@ -53,13 +51,13 @@ export const register = async (req: Request, res: Response) => {
   )
     return res.status(400).send({ message: "Invalid input" });
 
-  // Check whether the passwords match
+  // Check whether passwords match
   if (password !== confirm_password)
     return res.status(400).send({
       message: "The passwords do not match",
     });
 
-  // Validate the username
+  // Validate a username
   if (!isUsernameValid(username))
     return res.status(400).send({
       message: "Username must meet the requirements",
@@ -71,7 +69,7 @@ export const register = async (req: Request, res: Response) => {
       message: "Password must meet the requirements",
     });
 
-  // Validate the e-mail
+  // Validate en e-mail
   if (!isEmailValid(email))
     return res.status(400).send({
       message: "E-mail must meet the requirements",
@@ -95,7 +93,7 @@ export const register = async (req: Request, res: Response) => {
   // Encrypt the provided password
   const passwordHash = bcrypt.hashSync(password, 16);
 
-  // Try to save the user to the database
+  // Try to save a user in the database
   try {
     await prisma.user.create({
       data: {
@@ -116,18 +114,18 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   const { username, password }: Omit<Credentials, "email"> = req.body;
 
-  // Check whether the provided data exists
+  // Check whether provided data exists
   if (!username || !password)
     return res.status(400).send({ message: "Invalid input" });
 
-  // Check whether the provided username exists in the database
+  // Check whether a provided username exists in the database
   const user = await prisma.user.findUnique({
     where: { username: username },
   });
   if (!user)
     return res.status(400).send({ message: "Invalid username or password" }); // Prevent from an easier bruteforcing
 
-  // Check whether the provided password matches the password in the database
+  // Check whether a provided password matches the password in the database
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid)
     return res.status(400).send({ message: "Invalid username or password" }); // Prevent from an easier bruteforcing
@@ -142,7 +140,7 @@ export const login = async (req: Request, res: Response) => {
       }
     );
 
-    // Send the user his accessToken
+    // Send a user the accessToken
     res.status(200).send({
       message: "You've been successfully logged in!",
       access_token: accessToken,
@@ -171,7 +169,7 @@ export const getUserData = async (req: Request, res: Response) => {
   if (!userData)
     return res.status(400).send({ message: "Something went wrong" });
 
-  // If the user has no wallets, return their data with empty wallets array
+  // If the user has no wallets, return their data with an empty wallets array
   if (!userWallets) {
     const callbackData: CallbackData = {
       first_name: userData.first_name,
@@ -203,7 +201,7 @@ export const getUserData = async (req: Request, res: Response) => {
     email: userData.email,
     picture: userData.picture,
     wallets: userWallets.map(x => ({
-      name: currencies.find(i => i.uuid === x.cryptocurrencyUUID)?.name,
+      name: currencies.find(i => i.uuid === x.cryptocurrencyUUID)!.name,
       amount: x.amount,
     })),
   };

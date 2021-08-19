@@ -1,10 +1,10 @@
 import express from "express";
 import dotenv from "dotenv";
-import router from "./routes/index";
+import { router } from "./routes/index";
 
 dotenv.config();
 
-const app = express();
+export const app = express();
 const PORT = process.env.PORT || 4000;
 
 // Server configuration
@@ -19,5 +19,3 @@ if (process.env.NODE_ENV !== "test") {
     );
   });
 }
-
-export default app;

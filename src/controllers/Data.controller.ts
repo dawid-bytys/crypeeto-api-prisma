@@ -24,6 +24,7 @@ interface CryptoData {
 export const getChartData = async (req: Request, res: Response) => {
   const { symbol, exchange, interval } = req.query;
 
+  // Check whether provided data is valid
   if (!symbol || !exchange || !interval)
     return res.status(400).send({ message: "Invalid input" });
 

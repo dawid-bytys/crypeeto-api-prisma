@@ -1,6 +1,6 @@
-import prisma from "../prisma";
+import { prisma } from "../prisma";
 import request from "supertest";
-import app from "../app";
+import { app } from "../app";
 import { testLogin } from "../utils/testUtils";
 
 // Create a new server instance

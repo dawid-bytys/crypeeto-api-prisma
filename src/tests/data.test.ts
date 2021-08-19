@@ -1,6 +1,6 @@
-import prisma from "../prisma";
+import { prisma } from "../prisma";
 import request from "supertest";
-import app from "../app";
+import { app } from "../app";
 import { testRegister, testLogin } from "../utils/testUtils";
 
 let accessToken: string; // Create a global accessToken variable

@@ -10,7 +10,7 @@ export const authenticateToken = (
   const authHeader = req.headers["authorization"];
   const accessToken = authHeader && authHeader.split(" ")[1];
 
-  // Check whether the accessToken exists
+  // Check whether an accessToken exists
   if (!accessToken) return res.status(401).send({ message: "Unauthorized" });
 
   // Try to verify the accessToken with the TOKEN_SECRET
