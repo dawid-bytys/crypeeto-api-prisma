@@ -15,6 +15,8 @@ const main = async () => {
     // Add test user
     const user = await prisma.user.create({
       data: {
+        first_name: "Alex",
+        last_name: "Smith",
         username: "testuser123",
         password: "PasswordHash123!",
         email: "test@test.com",
@@ -31,7 +33,7 @@ const main = async () => {
       }),
     ]);
 
-    // Create to sample wallets
+    // Create two sample wallets
     await Promise.all([
       prisma.wallet.create({
         data: {

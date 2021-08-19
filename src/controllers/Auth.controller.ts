@@ -10,12 +10,17 @@ import jwt from "jsonwebtoken";
 
 // Types
 interface Credentials {
+  first_name: string;
+  last_name: string;
   username: string;
   password: string;
+  confirm_password: string;
   email: string;
 }
 
 interface CallbackData {
+  first_name: string;
+  last_name: string;
   username: string;
   email: string;
   picture: string | undefined;
@@ -28,11 +33,31 @@ interface CallbackData {
 }
 
 export const register = async (req: Request, res: Response) => {
-  const { username, password, email }: Credentials = req.body;
+  const {
+    first_name,
+    last_name,
+    username,
+    password,
+    confirm_password,
+    email,
+  }: Credentials = req.body;
 
   // Check whether the provided data exists
-  if (!username || !password || !email)
+  if (
+    !first_name ||
+    !last_name ||
+    !username ||
+    !password ||
+    !email ||
+    !confirm_password
+  )
     return res.status(400).send({ message: "Invalid input" });
+
+  // Check whether the passwords match
+  if (password !== confirm_password)
+    return res.status(400).send({
+      message: "The passwords do not match",
+    });
 
   // Validate the username
   if (!isUsernameValid(username))
@@ -74,6 +99,8 @@ export const register = async (req: Request, res: Response) => {
   try {
     await prisma.user.create({
       data: {
+        first_name: first_name,
+        last_name: last_name,
         username: username,
         password: passwordHash,
         email: email,
@@ -147,6 +174,8 @@ export const getUserData = async (req: Request, res: Response) => {
   // If the user has no wallets, return their data with empty wallets array
   if (!userWallets) {
     const callbackData: CallbackData = {
+      first_name: userData.first_name,
+      last_name: userData.last_name,
       username: userData.username,
       email: userData.email,
       picture: userData.picture,
@@ -168,6 +197,8 @@ export const getUserData = async (req: Request, res: Response) => {
     return res.status(400).send({ message: "Something went wrong" });
 
   const callbackData: CallbackData = {
+    first_name: userData.first_name,
+    last_name: userData.last_name,
     username: userData.username,
     email: userData.email,
     picture: userData.picture,
