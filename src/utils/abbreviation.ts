@@ -1,4 +1,4 @@
-export const getAbbreviation = (currency: string): string => {
+export const getAbbreviation = (currency: string) => {
   switch (currency) {
     case "Bitcoin":
       return "BTC";

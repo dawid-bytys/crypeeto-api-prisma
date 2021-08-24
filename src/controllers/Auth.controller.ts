@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../prisma";
 import {
+  isInputValid,
   isUsernameValid,
   isPasswordValid,
   isEmailValid,
@@ -31,6 +32,10 @@ interface CallbackData {
 }
 
 export const register = async (req: Request, res: Response) => {
+  // Check whether provided data exists
+  if (!isInputValid<Credentials>(req.body, 6))
+    return res.status(400).send({ message: "Invalid input" });
+
   const {
     first_name,
     last_name,
@@ -39,17 +44,6 @@ export const register = async (req: Request, res: Response) => {
     confirm_password,
     email,
   }: Credentials = req.body;
-
-  // Check whether provided data exists
-  if (
-    !first_name ||
-    !last_name ||
-    !username ||
-    !password ||
-    !email ||
-    !confirm_password
-  )
-    return res.status(400).send({ message: "Invalid input" });
 
   // Check whether passwords match
   if (password !== confirm_password)
@@ -112,11 +106,11 @@ export const register = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  const { username, password }: Omit<Credentials, "email"> = req.body;
-
   // Check whether provided data exists
-  if (!username || !password)
+  if (!isInputValid<Omit<Credentials, "email">>(req.body, 2))
     return res.status(400).send({ message: "Invalid input" });
+
+  const { username, password }: Omit<Credentials, "email"> = req.body;
 
   // Check whether a provided username exists in the database
   const user = await prisma.user.findUnique({

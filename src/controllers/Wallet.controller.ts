@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { prisma } from "../prisma";
 import axios from "axios";
 import { getAbbreviation } from "../utils/abbreviation";
+import { isInputValid } from "../utils/validation";
 
 // Types
 interface Currency {
@@ -77,11 +78,11 @@ export const updateWallet = async (req: Request, res: Response) => {
     return res.status(404).send({ message: "Endpoint not found" });
 
   if (type === "add") {
-    const { name, amount }: Add = req.body;
-
     // Check whether the user has provided a correct input
-    if (!name || !amount || amount < 0)
+    if (!isInputValid<Add>(req.body, 2) || req.body.amount <= 0)
       return res.status(400).send({ message: "Invalid input" });
+
+    const { name, amount }: Add = req.body;
 
     // Check whether a provided currency name exists in the database
     const specificCurrency = await prisma.cryptocurrency.findUnique({
@@ -126,11 +127,11 @@ export const updateWallet = async (req: Request, res: Response) => {
       res.status(400).send({ message: err.message });
     }
   } else {
-    const { from, to, amount }: Exchange = req.body;
-
     // Check whether the user has provided a correct input
-    if (!from || !to || !amount || amount <= 0)
+    if (!isInputValid<Exchange>(req.body, 3) || req.body.amount <= 0)
       return res.status(400).send({ message: "Invalid input" });
+
+    const { from, to, amount }: Exchange = req.body;
 
     // Check whether the user has provided different currencies
     if (from === to)

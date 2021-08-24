@@ -6,6 +6,7 @@ import { testLogin } from "../utils/testUtils";
 // Create a new server instance
 let server: any;
 let port: number;
+let accessToken;
 
 describe("[-----AUTHORIZATION-----]", () => {
   // before all tests, clear the database
@@ -22,12 +23,16 @@ describe("[-----AUTHORIZATION-----]", () => {
     server.close();
   });
 
+  // register tests
   describe("[POST] --> /register", () => {
     // registers successfully [200]
     it("registers successfully [200]", async () => {
-      const response = await request(server).post("/api/register").send({
+      const response = await request(server).post("/api/auth/register").send({
+        first_name: "John",
+        last_name: "Smith",
         username: "testusername",
         password: "TestPassword123!",
+        confirm_password: "TestPassword123!",
         email: "test@test.com",
       });
 
@@ -37,7 +42,35 @@ describe("[-----AUTHORIZATION-----]", () => {
 
     // returns the input is invalid (no any data) [400]
     it("returns the input is invalid (no any data) [400]", async () => {
-      const response = await request(server).post("/api/register").send({});
+      const response = await request(server)
+        .post("/api/auth/register")
+        .send({});
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe("Invalid input");
+    });
+
+    // returns the input is invalid (no first_name) [400]
+    it("returns the input is invalid (no first_name) [400]", async () => {
+      const response = await request(server).post("/api/auth/register").send({
+        last_name: "Smith",
+        password: "TestPassword123!",
+        confirm_password: "TestPassword123!",
+        email: "test@test.com",
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe("Invalid input");
+    });
+
+    // returns the input is invalid (no last_name) [400]
+    it("returns the input is invalid (no last_name) [400]", async () => {
+      const response = await request(server).post("/api/auth/register").send({
+        first_name: "Smith",
+        password: "TestPassword123!",
+        confirm_password: "TestPassword123!",
+        email: "test@test.com",
+      });
 
       expect(response.status).toBe(400);
       expect(response.body.message).toBe("Invalid input");
@@ -45,8 +78,11 @@ describe("[-----AUTHORIZATION-----]", () => {
 
     // returns the input is invalid (no username) [400]
     it("returns the input is invalid (no username) [400]", async () => {
-      const response = await request(server).post("/api/register").send({
+      const response = await request(server).post("/api/auth/register").send({
+        first_name: "John",
+        last_name: "Smith",
         password: "TestPassword123!",
+        confirm_password: "TestPassword123!",
         email: "test@test.com",
       });
 
@@ -56,8 +92,11 @@ describe("[-----AUTHORIZATION-----]", () => {
 
     // returns the input is invalid (no password) [400]
     it("returns the input is invalid (no password) [400]", async () => {
-      const response = await request(server).post("/api/register").send({
+      const response = await request(server).post("/api/auth/register").send({
+        first_name: "John",
+        last_name: "Smith",
         username: "testusername",
+        confirm_password: "TestPassword123!",
         email: "test@test.com",
       });
 
@@ -67,9 +106,12 @@ describe("[-----AUTHORIZATION-----]", () => {
 
     // returns the input is invalid (no email) [400]
     it("returns the input is invalid (no email) [400]", async () => {
-      const response = await request(server).post("/api/register").send({
+      const response = await request(server).post("/api/auth/register").send({
+        first_name: "John",
+        last_name: "Smith",
         username: "testusername",
         password: "TestPassword123!",
+        confirm_password: "TestPassword123!",
       });
 
       expect(response.status).toBe(400);
@@ -78,7 +120,10 @@ describe("[-----AUTHORIZATION-----]", () => {
 
     // returns the input is invalid (no username and password) [400]
     it("returns the input is invalid (no username and password) [400]", async () => {
-      const response = await request(server).post("/api/register").send({
+      const response = await request(server).post("/api/auth/register").send({
+        first_name: "John",
+        last_name: "Smith",
+        confirm_password: "TestPassword123!",
         email: "test@test.com",
       });
 
@@ -88,7 +133,9 @@ describe("[-----AUTHORIZATION-----]", () => {
 
     // returns the input is invalid (no username and email) [400]
     it("returns the input is invalid (no username and email) [400]", async () => {
-      const response = await request(server).post("/api/register").send({
+      const response = await request(server).post("/api/auth/register").send({
+        first_name: "John",
+        last_name: "Smith",
         password: "TestPassword123!",
       });
 
@@ -98,7 +145,10 @@ describe("[-----AUTHORIZATION-----]", () => {
 
     // returns the input is invalid (no password and email) [400]
     it("returns the input is invalid (no password and email) [400]", async () => {
-      const response = await request(server).post("/api/register").send({
+      const response = await request(server).post("/api/auth/register").send({
+        first_name: "John",
+        last_name: "Smith",
+        confirm_password: "TestPassword123!",
         username: "testusername",
       });
 
@@ -108,9 +158,12 @@ describe("[-----AUTHORIZATION-----]", () => {
 
     // returns the username does not meet the requirements [400]
     it("returns the username does not meet the requirements [400]", async () => {
-      const response = await request(server).post("/api/register").send({
+      const response = await request(server).post("/api/auth/register").send({
+        first_name: "John",
+        last_name: "Smith",
         username: "../",
         password: "TestPassword123!",
+        confirm_password: "TestPassword123!",
         email: "test@test.com",
       });
 
@@ -120,9 +173,12 @@ describe("[-----AUTHORIZATION-----]", () => {
 
     // returns the password does not meet the requirement [400]
     it("returns the password does not meet the requirements [400]", async () => {
-      const response = await request(server).post("/api/register").send({
+      const response = await request(server).post("/api/auth/register").send({
+        first_name: "John",
+        last_name: "Smith",
         username: "testusername",
         password: "testpassword123",
+        confirm_password: "testpassword123",
         email: "test@test.com",
       });
 
@@ -132,9 +188,12 @@ describe("[-----AUTHORIZATION-----]", () => {
 
     // returns the email doest not meet the requirement [400]
     it("returns the email does not meet the requirements [400]", async () => {
-      const response = await request(server).post("/api/register").send({
+      const response = await request(server).post("/api/auth/register").send({
+        first_name: "John",
+        last_name: "Smith",
         username: "testusername",
         password: "TestPassword123!",
+        confirm_password: "TestPassword123!",
         email: "test@@test.com",
       });
 
@@ -144,9 +203,12 @@ describe("[-----AUTHORIZATION-----]", () => {
 
     // returns the username or the email already exists (provided existing username) [400]
     it("returns the username or the e-mail already exists (provided existing username) [400]", async () => {
-      const response = await request(server).post("/api/register").send({
+      const response = await request(server).post("/api/auth/register").send({
+        first_name: "John",
+        last_name: "Smith",
         username: "testusername",
         password: "TestPassword123!",
+        confirm_password: "TestPassword123!",
         email: "test123@test123.com",
       });
 
@@ -158,9 +220,12 @@ describe("[-----AUTHORIZATION-----]", () => {
 
     // returns the username or the email already exists (provided existing email) [400]
     it("returns the username or the e-mail already exists (provided existing email) [400]", async () => {
-      const response = await request(server).post("/api/register").send({
+      const response = await request(server).post("/api/auth/register").send({
+        first_name: "John",
+        last_name: "Smith",
         username: "testusername123",
         password: "TestPassword123!",
+        confirm_password: "TestPassword123!",
         email: "test@test.com",
       });
 
@@ -172,9 +237,12 @@ describe("[-----AUTHORIZATION-----]", () => {
 
     // returns the username or the email already exists (provided existing username and email) [400]
     it("returns the username or the e-mail already exists (provided existing username and email) [400]", async () => {
-      const response = await request(server).post("/api/register").send({
+      const response = await request(server).post("/api/auth/register").send({
+        first_name: "John",
+        last_name: "Smith",
         username: "testusername",
         password: "TestPassword123!",
+        confirm_password: "TestPassword123!",
         email: "test@test.com",
       });
 
@@ -185,10 +253,11 @@ describe("[-----AUTHORIZATION-----]", () => {
     });
   });
 
+  // login tests
   describe("[POST] --> /login", () => {
     // logins successfully (returns accessToken) [200]
     it("logins successfully (returns accessToken) [200]", async () => {
-      const response = await request(server).post("/api/login").send({
+      const response = await request(server).post("/api/auth/login").send({
         username: "testusername",
         password: "TestPassword123!",
       });
@@ -200,7 +269,7 @@ describe("[-----AUTHORIZATION-----]", () => {
 
     // returns the input is invalid (no any data) [400]
     it("returns the input is invalid (no any data) [400]", async () => {
-      const response = await request(server).post("/api/login").send({});
+      const response = await request(server).post("/api/auth/login").send({});
 
       expect(response.status).toBe(400);
       expect(response.body.message).toBe("Invalid input");
@@ -208,7 +277,7 @@ describe("[-----AUTHORIZATION-----]", () => {
 
     // returns the input is invalid (no username) [400]
     it("returns the input is invalid (no username) [400]", async () => {
-      const response = await request(server).post("/api/login").send({
+      const response = await request(server).post("/api/auth/login").send({
         password: "TestPassword123!",
       });
 
@@ -218,7 +287,7 @@ describe("[-----AUTHORIZATION-----]", () => {
 
     // returns the input is invalid (no password) [400]
     it("returns the input is invalid (no password) [400]", async () => {
-      const response = await request(server).post("/api/login").send({
+      const response = await request(server).post("/api/auth/login").send({
         username: "testusername",
       });
 
@@ -228,7 +297,7 @@ describe("[-----AUTHORIZATION-----]", () => {
 
     // returns invalid username or password (username does not exists in the database) [400]
     it("returns the input is invalid (username does not exists in the database) [400]", async () => {
-      const response = await request(server).post("/api/login").send({
+      const response = await request(server).post("/api/auth/login").send({
         username: "testusername123",
         password: "TestPassword123!",
       });
@@ -239,7 +308,7 @@ describe("[-----AUTHORIZATION-----]", () => {
 
     // returns invalid username or password (password is invalid) [400]
     it("returns the input is invalid (password is invalid) [400]", async () => {
-      const response = await request(server).post("/api/login").send({
+      const response = await request(server).post("/api/auth/login").send({
         username: "testusername",
         password: "TestPassword1234!",
       });
@@ -249,35 +318,17 @@ describe("[-----AUTHORIZATION-----]", () => {
     });
   });
 
-  describe("[GET] --> /auth", () => {
-    // returns that the user is authorized [200]
-    it("returns that the user is authorized [200]", async () => {
-      const accessToken = await testLogin(port);
+  // user data tests
+  describe("[GET] --> /user", () => {
+    // returns user's data successfully [200]
+    it("returns user's data successfully [200]", async () => {
+      accessToken = await testLogin(port);
 
-      const response = await request(app)
-        .get("/api/auth")
+      const response = await request(server)
+        .get("/api/auth/user")
         .set("Authorization", `Bearer ${accessToken}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.is_authorized).toBe(true);
-    });
-
-    // returns that the user is not authorized (no accessToken provided) [401]
-    it("returns that the user is not authorized (no accessToken provided) [401]", async () => {
-      const response = await request(app).get("/api/auth");
-
-      expect(response.status).toBe(401);
-      expect(response.body.is_authorized).toBe(false);
-    });
-
-    // returns that the user is not authorized (invalid or expired accessToken) [401]
-    it("returns that the user is not authorized (invalid or expired accessToken) [401]", async () => {
-      const response = await request(server)
-        .get("/api/auth")
-        .set("Authorization", `Bearer 12345`);
-
-      expect(response.status).toBe(401);
-      expect(response.body.is_authorized).toBe(false);
     });
   });
 });

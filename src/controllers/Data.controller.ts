@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import axios from "axios";
+import { isInputValid } from "../utils/validation";
 
 // Types
 interface CryptoData {
@@ -22,11 +23,11 @@ interface CryptoData {
 }
 
 export const getChartData = async (req: Request, res: Response) => {
-  const { symbol, exchange, interval } = req.query;
-
   // Check whether provided data is valid
-  if (!symbol || !exchange || !interval)
+  if (!isInputValid(req.query, 3))
     return res.status(400).send({ message: "Invalid input" });
+
+  const { symbol, exchange, interval } = req.query;
 
   // Try to fetch crypto data
   try {
