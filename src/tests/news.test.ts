@@ -3,7 +3,7 @@ import request from "supertest";
 import { app } from "../app";
 import { testRegister, testLogin } from "../utils/testUtils";
 
-let accessToken: string; // Create a global accessToken variable
+let cookies: any;
 let server: any; // Create a new server instance
 let port: number;
 
@@ -16,7 +16,8 @@ describe("[-----NEWS-----]", () => {
     await prisma.wallet.deleteMany({});
     await prisma.user.deleteMany({});
     await testRegister(port);
-    accessToken = await testLogin(port);
+    const response = await testLogin(port);
+    cookies = response?.headers["set-cookie"];
   });
 
   // Close the server after all test
@@ -33,9 +34,7 @@ describe("[-----NEWS-----]", () => {
         .query({
           topic: "Bitcoin",
         })
-        .set({
-          Authorization: `Bearer ${accessToken}`,
-        });
+        .set("cookie", cookies);
 
       expect(response.status).toBe(200);
       expect(response.body.totalResults).toBeGreaterThan(0);
@@ -48,9 +47,7 @@ describe("[-----NEWS-----]", () => {
         .query({
           topic: "Bitcoin",
         })
-        .set({
-          Authorization: `Bearer 12345`,
-        });
+        .set("cookie", "invalid cookies");
 
       expect(response.status).toBe(401);
       expect(response.body.message).toBe("Unauthorized");
@@ -61,9 +58,7 @@ describe("[-----NEWS-----]", () => {
       const response = await request(server)
         .get("/api/news")
         .query({})
-        .set({
-          Authorization: `Bearer ${accessToken}`,
-        });
+        .set("cookie", cookies);
 
       expect(response.status).toBe(400);
       expect(response.body.message).toBe("Invalid input");
@@ -76,9 +71,7 @@ describe("[-----NEWS-----]", () => {
         .query({
           topic: "randomtestinput12345",
         })
-        .set({
-          Authorization: `Bearer ${accessToken}`,
-        });
+        .set("cookie", cookies);
 
       expect(response.status).toBe(200);
       expect(response.body.totalResults).toBe(0);

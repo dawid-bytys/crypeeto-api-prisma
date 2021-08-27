@@ -3,7 +3,7 @@ import request from "supertest";
 import { app } from "../app";
 import { testRegister, testLogin } from "../utils/testUtils";
 
-let accessToken: string; // Create a global accessToken variable
+let cookies: any;
 let server: any; // Create a new server instance
 let port: number;
 
@@ -16,7 +16,8 @@ describe("[-----WALLET-----]", () => {
     await prisma.wallet.deleteMany({});
     await prisma.user.deleteMany({});
     await testRegister(port);
-    accessToken = await testLogin(port);
+    const response = await testLogin(port);
+    cookies = response?.headers["set-cookie"];
   });
 
   // Close the server after all test
@@ -30,7 +31,7 @@ describe("[-----WALLET-----]", () => {
     it("creates a new 'Bitcoin' wallet successfully [200]", async () => {
       const response = await request(server)
         .post("/api/wallet/create")
-        .set("Authorization", `Bearer ${accessToken}`)
+        .set("cookie", cookies)
         .send({
           name: "Bitcoin",
         });
@@ -45,7 +46,7 @@ describe("[-----WALLET-----]", () => {
     it("creates a new 'Ethereum' wallet successfully [200]", async () => {
       const response = await request(server)
         .post("/api/wallet/create")
-        .set("Authorization", `Bearer ${accessToken}`)
+        .set("cookie", cookies)
         .send({
           name: "Ethereum",
         });
@@ -60,7 +61,7 @@ describe("[-----WALLET-----]", () => {
     it("creates a new 'Ripple' wallet successfully [200]", async () => {
       const response = await request(server)
         .post("/api/wallet/create")
-        .set("Authorization", `Bearer ${accessToken}`)
+        .set("cookie", cookies)
         .send({
           name: "Ripple",
         });
@@ -75,7 +76,7 @@ describe("[-----WALLET-----]", () => {
     it("creates a new 'Tether' wallet successfully [200]", async () => {
       const response = await request(server)
         .post("/api/wallet/create")
-        .set("Authorization", `Bearer ${accessToken}`)
+        .set("cookie", cookies)
         .send({
           name: "Tether",
         });
@@ -90,7 +91,7 @@ describe("[-----WALLET-----]", () => {
     it("creates a new 'Stellar' wallet successfully [200]", async () => {
       const response = await request(server)
         .post("/api/wallet/create")
-        .set("Authorization", `Bearer ${accessToken}`)
+        .set("cookie", cookies)
         .send({
           name: "Stellar",
         });
@@ -105,7 +106,7 @@ describe("[-----WALLET-----]", () => {
     it("creates a new 'Litecoin' wallet successfully [200]", async () => {
       const response = await request(server)
         .post("/api/wallet/create")
-        .set("Authorization", `Bearer ${accessToken}`)
+        .set("cookie", cookies)
         .send({
           name: "Litecoin",
         });
@@ -120,7 +121,7 @@ describe("[-----WALLET-----]", () => {
     it("returns invalid input (no any data) [400]", async () => {
       const response = await request(server)
         .post("/api/wallet/create")
-        .set("Authorization", `Bearer ${accessToken}`)
+        .set("cookie", cookies)
         .send({});
 
       expect(response.status).toBe(400);
@@ -131,7 +132,7 @@ describe("[-----WALLET-----]", () => {
     it("returns the provided cryptocurrency name is not supported [400]", async () => {
       const response = await request(server)
         .post("/api/wallet/create")
-        .set("Authorization", `Bearer ${accessToken}`)
+        .set("cookie", cookies)
         .send({
           name: "TestCoin",
         });
@@ -146,7 +147,7 @@ describe("[-----WALLET-----]", () => {
     it("returns the user already has a wallet with provided cryptocurrency name [400]", async () => {
       const response = await request(server)
         .post("/api/wallet/create")
-        .set("Authorization", `Bearer ${accessToken}`)
+        .set("cookie", cookies)
         .send({
           name: "Bitcoin",
         });
@@ -164,7 +165,7 @@ describe("[-----WALLET-----]", () => {
     it("returns endpoint not found (invalid input) [404]", async () => {
       const response = await request(server)
         .post("/api/wallet/update/test")
-        .set("Authorization", `Bearer ${accessToken}`);
+        .set("cookie", cookies);
 
       expect(response.status).toBe(404);
       expect(response.body.message).toBe("Endpoint not found");
@@ -177,7 +178,7 @@ describe("[-----WALLET-----]", () => {
     it("adds specified amount of money successfully [200]", async () => {
       const response = await request(server)
         .post("/api/wallet/update/add")
-        .set("Authorization", `Bearer ${accessToken}`)
+        .set("cookie", cookies)
         .send({
           name: "Ethereum",
           amount: 1,
@@ -193,7 +194,7 @@ describe("[-----WALLET-----]", () => {
     it("returns invalid input (no any data) [400]", async () => {
       const response = await request(server)
         .post("/api/wallet/update/add")
-        .set("Authorization", `Bearer ${accessToken}`)
+        .set("cookie", cookies)
         .send({});
 
       expect(response.status).toBe(400);
@@ -204,7 +205,7 @@ describe("[-----WALLET-----]", () => {
     it("returns invalid input (no name) [400]", async () => {
       const response = await request(server)
         .post("/api/wallet/update/add")
-        .set("Authorization", `Bearer ${accessToken}`)
+        .set("cookie", cookies)
         .send({
           amount: 1,
         });
@@ -217,7 +218,7 @@ describe("[-----WALLET-----]", () => {
     it("returns invalid input (no amount) [400]", async () => {
       const response = await request(server)
         .post("/api/wallet/update/add")
-        .set("Authorization", `Bearer ${accessToken}`)
+        .set("cookie", cookies)
         .send({
           name: "Ethereum",
         });
@@ -230,7 +231,7 @@ describe("[-----WALLET-----]", () => {
     it("returns the cryptocurrency is invalid [400]", async () => {
       const response = await request(server)
         .post("/api/wallet/update/add")
-        .set("Authorization", `Bearer ${accessToken}`)
+        .set("cookie", cookies)
         .send({
           name: "Dogecoin",
           amount: 1,
@@ -258,7 +259,7 @@ describe("[-----WALLET-----]", () => {
 
       const response = await request(server)
         .post("/api/wallet/update/add")
-        .set("Authorization", `Bearer ${accessToken}`)
+        .set("cookie", cookies)
         .send({
           name: "Ethereum",
           amount: 1,
@@ -270,307 +271,280 @@ describe("[-----WALLET-----]", () => {
       );
     });
 
-    // returns the user is not authorized (no any token) [401]
-    it("returns the user is not authorized (no any token) [401]", async () => {
-      const response = await request(server)
-        .post("/api/wallet/update/add")
-        .set("Authorization", `Bearer `)
-        .send({
-          name: "Dogecoin",
-          amount: 1,
-        });
-
-      expect(response.status).toBe(401);
-      expect(response.body.message).toBe("Unauthorized");
-    });
-
-    // returns the user is not authorized (invalid or expired token) [401]
-    it("returns the user is not authorized (invalid or expired token) [401]", async () => {
-      const response = await request(server)
-        .post("/api/wallet/update/add")
-        .set("Authorization", `Bearer 12345`)
-        .send({
-          name: "Dogecoin",
-          amount: 1,
-        });
-
-      expect(response.status).toBe(401);
-      expect(response.body.message).toBe("Unauthorized");
-    });
-  });
-  describe("[POST] --> /wallet/update/exchange", () => {
-    // exchanges specified amount of money successfully [200]
-    it("exchanges specified amount of money successfully [200]", async () => {
-      await prisma.wallet.updateMany({
-        where: { amount: 0 },
-        data: {
-          amount: {
-            increment: 1,
-          },
-        },
-      });
-
-      const response = await request(server)
-        .post("/api/wallet/update/exchange")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({
-          from: "Bitcoin",
-          to: "Tether",
-          amount: 1,
-        });
-
-      expect(response.status).toBe(200);
-      expect(response.body.message).toBe(
-        "Your wallet has been successfully updated"
-      );
-    });
-
-    // returns invalid input (no any data) [400]
-    it("returns invalid input (no any data) [400]", async () => {
-      const response = await request(server)
-        .post("/api/wallet/update/exchange")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({});
-
-      expect(response.status).toBe(400);
-      expect(response.body.message).toBe("Invalid input");
-    });
-
-    // returns invalid input (no 'from') [400]
-    it("returns invalid input (no 'from') [400]", async () => {
-      const response = await request(server)
-        .post("/api/wallet/update/exchange")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({
-          to: "Tether",
-          amount: 1,
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.message).toBe("Invalid input");
-    });
-
-    // returns invalid input (no 'to') [400]
-    it("returns invalid input (no 'to') [400]", async () => {
-      const response = await request(server)
-        .post("/api/wallet/update/exchange")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({
-          from: "Bitcoin",
-          amount: 1,
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.message).toBe("Invalid input");
-    });
-
-    // returns invalid input (no 'amount' and 'from') [400]
-    it("returns invalid input (no 'amount' and 'from') [400]", async () => {
-      const response = await request(server)
-        .post("/api/wallet/update/exchange")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({
-          to: "Tether",
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.message).toBe("Invalid input");
-    });
-
-    // returns invalid input (no 'amount' and 'to') [400]
-    it("returns invalid input (no 'amount' and 'to') [400]", async () => {
-      const response = await request(server)
-        .post("/api/wallet/update/exchange")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({
-          from: "Bitcoin",
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.message).toBe("Invalid input");
-    });
-
-    // returns invalid input (no 'from' and 'to') [400]
-    it("returns invalid input (no 'from' and 'to') [400]", async () => {
-      const response = await request(server)
-        .post("/api/wallet/update/exchange")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({
-          amount: 1,
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.message).toBe("Invalid input");
-    });
-
-    // returns invalid input (amount < 0) [400]
-    it("returns invalid input (amount < 0) [400]", async () => {
-      const response = await request(server)
-        .post("/api/wallet/update/exchange")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({
-          from: "Bitcoin",
-          to: "Tether",
-          amount: -1,
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.message).toBe("Invalid input");
-    });
-
-    // returns the user cannot exchange the same currency [400]
-    it("returns the user cannot exchange the same currency [400]", async () => {
-      const response = await request(server)
-        .post("/api/wallet/update/exchange")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({
-          from: "Tether",
-          to: "Tether",
-          amount: 1,
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.message).toBe(
-        "You cannot exchange the same currency"
-      );
-    });
-
-    // returns the user has provided invalid currency ('from') [400]
-    it("returns the user has provided invalid currency ('from') [400]", async () => {
-      const response = await request(server)
-        .post("/api/wallet/update/exchange")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({
-          from: "TestCrypto",
-          to: "Tether",
-          amount: 1,
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.message).toBe(
-        "We do not support the provided currency"
-      );
-    });
-
-    // returns the user has provided invalid currency ('to') [400]
-    it("returns the user has provided invalid currency ('to') [400]", async () => {
-      const response = await request(server)
-        .post("/api/wallet/update/exchange")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({
-          from: "Tether",
-          to: "TestCrypto",
-          amount: 1,
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.message).toBe(
-        "We do not support the provided currency"
-      );
-    });
-
-    // returns the user has provided invalid currency ('from' and 'to') [400]
-    it("returns the user has provided invalid currency ('from' and 'to') [400]", async () => {
-      const response = await request(server)
-        .post("/api/wallet/update/exchange")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({
-          from: "TestCrypto",
-          to: "TestCryptoSecond",
-          amount: 1,
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.message).toBe(
-        "We do not support the provided currency"
-      );
-    });
-
-    // returns the user does not have a wallet with provided cryptocurrency ('from') [400]
-    it("returns the user does not have a wallet with provided cryptocurrency ('from') [400]", async () => {
-      const response = await request(server)
-        .post("/api/wallet/update/exchange")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({
-          from: "Ethereum",
-          to: "Tether",
-          amount: 1,
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.message).toBe(
-        "You either do not have a wallet with provided 'from' currency or with provided 'to' currency"
-      );
-    });
-
-    // returns the user does not have a wallet with provided cryptocurrency ('to') [400]
-    it("returns the user does not have a wallet with provided cryptocurrency ('to') [400]", async () => {
-      const response = await request(server)
-        .post("/api/wallet/update/exchange")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({
-          from: "Tether",
-          to: "Ethereum",
-          amount: 1,
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.message).toBe(
-        "You either do not have a wallet with provided 'from' currency or with provided 'to' currency"
-      );
-    });
-
-    // returns the user does not have a wallet with provided cryptocurrency ('from' and 'to') [400]
-    it("returns the user does not have a wallet with provided cryptocurrency ('from' and 'to') [400]", async () => {
-      const ripple = await prisma.cryptocurrency.findUnique({
-        where: { name: "Ripple" },
-      });
-
-      if (ripple) {
-        await prisma.wallet.deleteMany({
-          where: {
-            cryptocurrencyUUID: ripple.uuid,
+    describe("[POST] --> /wallet/update/exchange", () => {
+      // exchanges specified amount of money successfully [200]
+      it("exchanges specified amount of money successfully [200]", async () => {
+        await prisma.wallet.updateMany({
+          where: { amount: 0 },
+          data: {
+            amount: {
+              increment: 1,
+            },
           },
         });
-      }
 
-      const response = await request(server)
-        .post("/api/wallet/update/exchange")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({
-          from: "Ripple",
-          to: "Ethereum",
-          amount: 1,
-        });
+        const response = await request(server)
+          .post("/api/wallet/update/exchange")
+          .set("cookie", cookies)
+          .send({
+            from: "Bitcoin",
+            to: "Tether",
+            amount: 1,
+          });
 
-      expect(response.status).toBe(400);
-      expect(response.body.message).toBe(
-        "You either do not have a wallet with provided 'from' currency or with provided 'to' currency"
-      );
-    });
-
-    // "returns the user does not have enough funds [400]"
-    it("returns the user does not have enough funds [400]", async () => {
-      await prisma.wallet.updateMany({
-        where: { amount: 4 },
-        data: {
-          amount: {
-            decrement: 4,
-          },
-        },
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe(
+          "Your wallet has been successfully updated"
+        );
       });
 
-      const response = await request(server)
-        .post("/api/wallet/update/exchange")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .send({
-          from: "Bitcoin",
-          to: "Tether",
-          amount: 3,
+      // returns invalid input (no any data) [400]
+      it("returns invalid input (no any data) [400]", async () => {
+        const response = await request(server)
+          .post("/api/wallet/update/exchange")
+          .set("cookie", cookies)
+          .send({});
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe("Invalid input");
+      });
+
+      // returns invalid input (no 'from') [400]
+      it("returns invalid input (no 'from') [400]", async () => {
+        const response = await request(server)
+          .post("/api/wallet/update/exchange")
+          .set("cookie", cookies)
+          .send({
+            to: "Tether",
+            amount: 1,
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe("Invalid input");
+      });
+
+      // returns invalid input (no 'to') [400]
+      it("returns invalid input (no 'to') [400]", async () => {
+        const response = await request(server)
+          .post("/api/wallet/update/exchange")
+          .set("cookie", cookies)
+          .send({
+            from: "Bitcoin",
+            amount: 1,
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe("Invalid input");
+      });
+
+      // returns invalid input (no 'amount' and 'from') [400]
+      it("returns invalid input (no 'amount' and 'from') [400]", async () => {
+        const response = await request(server)
+          .post("/api/wallet/update/exchange")
+          .set("cookie", cookies)
+          .send({
+            to: "Tether",
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe("Invalid input");
+      });
+
+      // returns invalid input (no 'amount' and 'to') [400]
+      it("returns invalid input (no 'amount' and 'to') [400]", async () => {
+        const response = await request(server)
+          .post("/api/wallet/update/exchange")
+          .set("cookie", cookies)
+          .send({
+            from: "Bitcoin",
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe("Invalid input");
+      });
+
+      // returns invalid input (no 'from' and 'to') [400]
+      it("returns invalid input (no 'from' and 'to') [400]", async () => {
+        const response = await request(server)
+          .post("/api/wallet/update/exchange")
+          .set("cookie", cookies)
+          .send({
+            amount: 1,
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe("Invalid input");
+      });
+
+      // returns invalid input (amount < 0) [400]
+      it("returns invalid input (amount < 0) [400]", async () => {
+        const response = await request(server)
+          .post("/api/wallet/update/exchange")
+          .set("cookie", cookies)
+          .send({
+            from: "Bitcoin",
+            to: "Tether",
+            amount: -1,
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe("Invalid input");
+      });
+
+      // returns the user cannot exchange the same currency [400]
+      it("returns the user cannot exchange the same currency [400]", async () => {
+        const response = await request(server)
+          .post("/api/wallet/update/exchange")
+          .set("cookie", cookies)
+          .send({
+            from: "Tether",
+            to: "Tether",
+            amount: 1,
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe(
+          "You cannot exchange the same currency"
+        );
+      });
+
+      // returns the user has provided invalid currency ('from') [400]
+      it("returns the user has provided invalid currency ('from') [400]", async () => {
+        const response = await request(server)
+          .post("/api/wallet/update/exchange")
+          .set("cookie", cookies)
+          .send({
+            from: "TestCrypto",
+            to: "Tether",
+            amount: 1,
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe(
+          "We do not support the provided currency"
+        );
+      });
+
+      // returns the user has provided invalid currency ('to') [400]
+      it("returns the user has provided invalid currency ('to') [400]", async () => {
+        const response = await request(server)
+          .post("/api/wallet/update/exchange")
+          .set("cookie", cookies)
+          .send({
+            from: "Tether",
+            to: "TestCrypto",
+            amount: 1,
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe(
+          "We do not support the provided currency"
+        );
+      });
+
+      // returns the user has provided invalid currency ('from' and 'to') [400]
+      it("returns the user has provided invalid currency ('from' and 'to') [400]", async () => {
+        const response = await request(server)
+          .post("/api/wallet/update/exchange")
+          .set("cookie", cookies)
+          .send({
+            from: "TestCrypto",
+            to: "TestCryptoSecond",
+            amount: 1,
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe(
+          "We do not support the provided currency"
+        );
+      });
+
+      // returns the user does not have a wallet with provided cryptocurrency ('from') [400]
+      it("returns the user does not have a wallet with provided cryptocurrency ('from') [400]", async () => {
+        const response = await request(server)
+          .post("/api/wallet/update/exchange")
+          .set("cookie", cookies)
+          .send({
+            from: "Ethereum",
+            to: "Tether",
+            amount: 1,
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe(
+          "You either do not have a wallet with provided 'from' currency or with provided 'to' currency"
+        );
+      });
+
+      // returns the user does not have a wallet with provided cryptocurrency ('to') [400]
+      it("returns the user does not have a wallet with provided cryptocurrency ('to') [400]", async () => {
+        const response = await request(server)
+          .post("/api/wallet/update/exchange")
+          .set("cookie", cookies)
+          .send({
+            from: "Tether",
+            to: "Ethereum",
+            amount: 1,
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe(
+          "You either do not have a wallet with provided 'from' currency or with provided 'to' currency"
+        );
+      });
+
+      // returns the user does not have a wallet with provided cryptocurrency ('from' and 'to') [400]
+      it("returns the user does not have a wallet with provided cryptocurrency ('from' and 'to') [400]", async () => {
+        const ripple = await prisma.cryptocurrency.findUnique({
+          where: { name: "Ripple" },
         });
 
-      expect(response.status).toBe(400);
-      expect(response.body.message).toBe("Not enough funds in the wallet");
+        if (ripple) {
+          await prisma.wallet.deleteMany({
+            where: {
+              cryptocurrencyUUID: ripple.uuid,
+            },
+          });
+        }
+
+        const response = await request(server)
+          .post("/api/wallet/update/exchange")
+          .set("cookie", cookies)
+          .send({
+            from: "Ripple",
+            to: "Ethereum",
+            amount: 1,
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe(
+          "You either do not have a wallet with provided 'from' currency or with provided 'to' currency"
+        );
+      });
+
+      // "returns the user does not have enough funds [400]"
+      it("returns the user does not have enough funds [400]", async () => {
+        await prisma.wallet.updateMany({
+          where: { amount: 4 },
+          data: {
+            amount: {
+              decrement: 4,
+            },
+          },
+        });
+
+        const response = await request(server)
+          .post("/api/wallet/update/exchange")
+          .set("cookie", cookies)
+          .send({
+            from: "Bitcoin",
+            to: "Tether",
+            amount: 3,
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe("Not enough funds in the wallet");
+      });
     });
   });
 });

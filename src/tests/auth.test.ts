@@ -5,14 +5,12 @@ import { testLogin } from "../utils/testUtils";
 
 // Create a new server instance
 let server: any;
-let port: number;
-let accessToken;
+let cookies: any;
 
 describe("[-----AUTHORIZATION-----]", () => {
   // before all tests, clear the database
   beforeAll(async () => {
     server = app.listen();
-    port = server.address().port;
 
     await prisma.wallet.deleteMany({});
     await prisma.user.deleteMany({});
@@ -262,9 +260,9 @@ describe("[-----AUTHORIZATION-----]", () => {
         password: "TestPassword123!",
       });
 
+      cookies = response.headers["set-cookie"];
+
       expect(response.status).toBe(200);
-      expect(typeof response.body.access_token).toBe("string");
-      expect(response.body.access_token.length).toBeGreaterThan(1);
     });
 
     // returns the input is invalid (no any data) [400]
@@ -322,11 +320,9 @@ describe("[-----AUTHORIZATION-----]", () => {
   describe("[GET] --> /user", () => {
     // returns user's data successfully [200]
     it("returns user's data successfully [200]", async () => {
-      accessToken = await testLogin(port);
-
       const response = await request(server)
         .get("/api/auth/user")
-        .set("Authorization", `Bearer ${accessToken}`);
+        .set("cookie", cookies);
 
       expect(response.status).toBe(200);
     });

@@ -128,17 +128,22 @@ export const login = async (req: Request, res: Response) => {
   try {
     const accessToken = jwt.sign(
       { uuid: user.uuid },
-      process.env.SECRET_TOKEN || "",
+      process.env.SECRET_TOKEN!,
       {
         expiresIn: "6h",
       }
     );
 
-    // Send a user the accessToken
-    res.status(200).send({
-      message: "You've been successfully logged in!",
-      access_token: accessToken,
-    });
+    // Set a httpOnly cookie with the accessToken
+    res
+      .status(200)
+      .cookie("access_token", accessToken, {
+        maxAge: 6 * 60 * 60 * 1000,
+        httpOnly: true,
+      })
+      .send({
+        message: "You've been successfully logged in!",
+      });
   } catch (err) {
     res.status(400).send({ message: err.message });
   }

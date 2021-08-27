@@ -1,4 +1,6 @@
 import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import { router } from "./routes/index";
 
@@ -9,6 +11,13 @@ const PORT = process.env.PORT || 4000;
 
 // Server configuration
 app.use(express.json());
+app.use(cookieParser());
+app.use(
+  cors({
+    credentials: true,
+    origin: "*",
+  })
+);
 app.use("/api", router);
 
 if (process.env.NODE_ENV !== "test") {

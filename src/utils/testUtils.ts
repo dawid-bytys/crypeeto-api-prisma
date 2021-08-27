@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 
 export const testRegister = async (port: number) => {
   try {
@@ -15,11 +15,20 @@ export const testRegister = async (port: number) => {
   }
 };
 
-export const testLogin = async (port: number): Promise<string> => {
-  const { data } = await axios.post(`http://localhost:${port}/api/auth/login`, {
-    username: "testusername",
-    password: "TestPassword123!",
-  });
+export const testLogin = async (
+  port: number
+): Promise<AxiosResponse | undefined> => {
+  try {
+    const response = await axios.post(
+      `http://localhost:${port}/api/auth/login`,
+      {
+        username: "testusername",
+        password: "TestPassword123!",
+      }
+    );
 
-  return data.access_token;
+    return response;
+  } catch (err) {
+    console.log(err);
+  }
 };

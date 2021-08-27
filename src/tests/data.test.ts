@@ -3,8 +3,8 @@ import request from "supertest";
 import { app } from "../app";
 import { testRegister, testLogin } from "../utils/testUtils";
 
-let accessToken: string; // Create a global accessToken variable
 let server: any; // Create a new server instance
+let cookies: any;
 let port: number;
 
 describe("[-----DATA-----]", () => {
@@ -16,7 +16,8 @@ describe("[-----DATA-----]", () => {
     await prisma.wallet.deleteMany({});
     await prisma.user.deleteMany({});
     await testRegister(port);
-    accessToken = await testLogin(port);
+    const response = await testLogin(port);
+    cookies = response?.headers["set-cookie"];
   });
 
   // Close the server after all test
@@ -34,9 +35,7 @@ describe("[-----DATA-----]", () => {
           exchange: "Binance",
           interval: "1h",
         })
-        .set({
-          Authorization: `Bearer ${accessToken}`,
-        });
+        .set("cookie", cookies);
 
       expect(response.status).toBe(200);
       expect(typeof response.body.meta).toBe("object");
@@ -56,9 +55,7 @@ describe("[-----DATA-----]", () => {
           exchange: "Binance",
           interval: "1h",
         })
-        .set({
-          Authorization: `Bearer 12345`,
-        });
+        .set("cookie", "invalid cookies");
 
       expect(response.status).toBe(401);
       expect(response.body.message).toBe("Unauthorized");
@@ -72,9 +69,7 @@ describe("[-----DATA-----]", () => {
           exchange: "Binance",
           interval: "1h",
         })
-        .set({
-          Authorization: `Bearer ${accessToken}`,
-        });
+        .set("cookie", cookies);
 
       expect(response.status).toBe(400);
       expect(response.body.message).toBe("Invalid input");
@@ -88,9 +83,7 @@ describe("[-----DATA-----]", () => {
           symbol: "ETH/USD",
           interval: "1h",
         })
-        .set({
-          Authorization: `Bearer ${accessToken}`,
-        });
+        .set("cookie", cookies);
 
       expect(response.status).toBe(400);
       expect(response.body.message).toBe("Invalid input");
@@ -104,9 +97,7 @@ describe("[-----DATA-----]", () => {
           symbol: "ETH/USD",
           interval: "1h",
         })
-        .set({
-          Authorization: `Bearer ${accessToken}`,
-        });
+        .set("cookie", cookies);
 
       expect(response.status).toBe(400);
       expect(response.body.message).toBe("Invalid input");
@@ -119,9 +110,7 @@ describe("[-----DATA-----]", () => {
         .query({
           interval: "1h",
         })
-        .set({
-          Authorization: `Bearer ${accessToken}`,
-        });
+        .set("cookie", cookies);
 
       expect(response.status).toBe(400);
       expect(response.body.message).toBe("Invalid input");
@@ -134,9 +123,7 @@ describe("[-----DATA-----]", () => {
         .query({
           symbol: "ETH/USD",
         })
-        .set({
-          Authorization: `Bearer ${accessToken}`,
-        });
+        .set("cookie", cookies);
 
       expect(response.status).toBe(400);
       expect(response.body.message).toBe("Invalid input");
@@ -149,9 +136,7 @@ describe("[-----DATA-----]", () => {
         .query({
           interval: "1h",
         })
-        .set({
-          Authorization: `Bearer ${accessToken}`,
-        });
+        .set("cookie", cookies);
 
       expect(response.status).toBe(400);
       expect(response.body.message).toBe("Invalid input");
