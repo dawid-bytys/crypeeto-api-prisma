@@ -1,3 +1,8 @@
+/**
+ * Returns an abbreviation of a currency
+ * @param {string} currency A value of the currency
+ * @returns {string} An abbreviation of the currency
+ */
 export const getAbbreviation = (currency: string) => {
   switch (currency) {
     case "Bitcoin":

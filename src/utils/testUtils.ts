@@ -1,5 +1,10 @@
 import axios, { AxiosResponse } from "axios";
 
+/**
+ * Registers a user
+ * @param {number} port The value of a port
+ *
+ */
 export const testRegister = async (port: number) => {
   try {
     await axios.post(`http://localhost:${port}/api/auth/register`, {
@@ -15,6 +20,11 @@ export const testRegister = async (port: number) => {
   }
 };
 
+/**
+ * Registers a user
+ * @param {number} port A port value
+ * @returns {promise} An axios type promise
+ */
 export const testLogin = async (
   port: number
 ): Promise<AxiosResponse | undefined> => {

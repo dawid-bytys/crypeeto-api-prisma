@@ -8,6 +8,7 @@ import {
 } from "../utils/validation";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import type { CurrencyLiteralType } from "../types/index";
 
 // Types
 interface Credentials {
@@ -24,11 +25,13 @@ interface CallbackData {
   last_name: string;
   username: string;
   email: string;
-  picture: string;
-  wallets: {
-    name: string;
-    amount: number;
-  }[];
+  picture?: string;
+  wallets:
+    | {
+        name: CurrencyLiteralType;
+        amount: number;
+      }[]
+    | [];
 }
 
 export const register = async (req: Request, res: Response) => {
@@ -78,7 +81,6 @@ export const register = async (req: Request, res: Response) => {
       where: { email: email },
     }),
   ]);
-
   if (usernameExists || emailExists)
     return res
       .status(400)
@@ -147,6 +149,13 @@ export const login = async (req: Request, res: Response) => {
   } catch (err) {
     res.status(400).send({ message: err.message });
   }
+};
+
+export const logout = async (req: Request, res: Response) => {
+  res
+    .status(200)
+    .clearCookie("access_token")
+    .send({ message: "You've been successfully logged out!" });
 };
 
 export const getUserData = async (req: Request, res: Response) => {

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
-// An authentication function for the protected routes
+// Authenticate a user
 export const authenticateToken = (
   req: Request,
   res: Response,
@@ -18,6 +18,9 @@ export const authenticateToken = (
     // Continue doing a request
     next();
   } catch (err) {
-    res.status(401).send({ message: "Unauthorized" });
+    res
+      .status(401)
+      .clearCookie("access_token")
+      .send({ message: "Unauthorized" });
   }
 };

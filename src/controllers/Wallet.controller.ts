@@ -3,19 +3,19 @@ import { prisma } from "../prisma";
 import axios from "axios";
 import { getAbbreviation } from "../utils/abbreviation";
 import { isInputValid } from "../utils/validation";
+import type { CurrencyLiteral } from "../types/index";
 
-// Types
 interface Currency {
-  name: string;
-}
-
-interface Exchange {
-  from: string;
-  to: string;
-  amount: number;
+  name: CurrencyLiteral;
 }
 
 interface Add extends Currency {
+  amount: number;
+}
+
+interface Exchange {
+  from: CurrencyLiteral;
+  to: CurrencyLiteral;
   amount: number;
 }
 
@@ -28,8 +28,8 @@ interface Rate {
 
 export const createWallet = async (req: Request, res: Response) => {
   const user = req.user;
-  const { name }: Currency = req.body;
 
+  const { name }: Currency = req.body;
   if (!name) return res.status(400).send({ message: "Invalid input" });
 
   // Find a cryptocurrency with provided type
